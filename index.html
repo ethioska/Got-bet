@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Road - Telegram Game</title>
+    <title>Chicken Road - With Gems & Avatar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -128,6 +128,26 @@
         .car-3 {
             background: linear-gradient(to bottom, #43a047, #2e7d32);
             top: 350px;
+        }
+        
+        .gem {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
         
         .controls {
@@ -270,6 +290,136 @@
             justify-content: center;
             align-items: center;
         }
+        
+        .menu {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 16px;
+            background: #fff;
+            border-top: 1px solid #e6e6e6;
+        }
+        
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #7b8794;
+            font-size: 13px;
+        }
+        
+        .menu-item.active {
+            color: #2b95d6;
+        }
+        
+        .menu-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .gems-collected {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            gap: 5px;
+        }
+        
+        .gem-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            color: white;
+        }
+        
+        .tap-game {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 200;
+            display: none;
+        }
+        
+        .tap-target {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff5722, #ff9800);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 20px;
+            animation: pulse 1s infinite;
+        }
+        
+        .avatar-selection {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 200;
+            display: none;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .avatar-item {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #40a4dc, #2b95d6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .avatar-item:active {
+            transform: scale(0.95);
+        }
+        
+        .avatar-item.locked {
+            background: linear-gradient(135deg, #7b8794, #9aa5b1);
+            cursor: not-allowed;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -287,8 +437,8 @@
                 <div class="multiplier-value">1.01x</div>
             </div>
             <div class="bet-amount">
-                Bet Amount
-                <div class="bet-value">0.28 ETB</div>
+                Gems Collected
+                <div class="bet-value"><span id="gemsCount">0</span>/5</div>
             </div>
         </div>
         
@@ -301,10 +451,53 @@
             <div class="car car-2"></div>
             <div class="car car-3"></div>
             
+            <div class="gems-collected" id="gemsContainer">
+                <!-- Gems will be added here dynamically -->
+            </div>
+            
             <div class="game-over">
                 <h2>GAME OVER</h2>
                 <div class="final-score">Score: <span id="finalScore">0</span></div>
+                <div class="final-score">Gems: <span id="finalGems">0</span>/5</div>
                 <button class="btn-restart">PLAY AGAIN</button>
+            </div>
+            
+            <div class="tap-game" id="tapGame">
+                <h2>TAP TAP MINI-GAME</h2>
+                <p>Tap the circle as many times as you can in 5 seconds!</p>
+                <div class="tap-target" id="tapTarget">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="final-score">Taps: <span id="tapCount">0</span></div>
+                <div class="final-score">Time: <span id="timeLeft">5</span>s</div>
+            </div>
+            
+            <div class="avatar-selection" id="avatarSelection">
+                <div class="close-btn" id="closeAvatar">
+                    <i class="fas fa-times"></i>
+                </div>
+                <h2>SELECT AVATAR</h2>
+                <p>Earn gems to unlock more avatars!</p>
+                <div class="avatar-grid">
+                    <div class="avatar-item" data-avatar="chicken">
+                        <i class="fas fa-dragon"></i>
+                    </div>
+                    <div class="avatar-item locked" data-avatar="rabbit">
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    <div class="avatar-item locked" data-avatar="cat">
+                        <i class="fas fa-cat"></i>
+                    </div>
+                    <div class="avatar-item locked" data-avatar="dog">
+                        <i class="fas fa-dog"></i>
+                    </div>
+                    <div class="avatar-item locked" data-avatar="cow">
+                        <i class="fas-cow"></i>
+                    </div>
+                    <div class="avatar-item locked" data-avatar="unicorn">
+                        <i class="fas fa-horse"></i>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -328,6 +521,25 @@
             </button>
             <button class="btn btn-easy">EASY MODE</button>
         </div>
+        
+        <div class="menu">
+            <div class="menu-item active">
+                <div class="menu-icon"><i class="fas fa-gamepad"></i></div>
+                <span>Play</span>
+            </div>
+            <div class="menu-item" id="avatarBtn">
+                <div class="menu-icon"><i class="fas fa-user"></i></div>
+                <span>Avatar</span>
+            </div>
+            <div class="menu-item" id="tapGameBtn">
+                <div class="menu-icon"><i class="fas fa-hand-point-up"></i></div>
+                <span>Tap Game</span>
+            </div>
+            <div class="menu-item">
+                <div class="menu-icon"><i class="fas fa-gem"></i></div>
+                <span>Gems: <span id="totalGems">0</span></span>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -338,8 +550,19 @@
             const restartBtn = document.querySelector('.btn-restart');
             const gameOverScreen = document.querySelector('.game-over');
             const finalScoreElement = document.getElementById('finalScore');
+            const finalGemsElement = document.getElementById('finalGems');
             const multiplierValue = document.querySelector('.multiplier-value');
-            const betValue = document.querySelector('.bet-value');
+            const gemsCountElement = document.getElementById('gemsCount');
+            const totalGemsElement = document.getElementById('totalGems');
+            const gemsContainer = document.getElementById('gemsContainer');
+            const tapGame = document.getElementById('tapGame');
+            const tapTarget = document.getElementById('tapTarget');
+            const tapCountElement = document.getElementById('tapCount');
+            const timeLeftElement = document.getElementById('timeLeft');
+            const tapGameBtn = document.getElementById('tapGameBtn');
+            const avatarSelection = document.getElementById('avatarSelection');
+            const avatarBtn = document.getElementById('avatarBtn');
+            const closeAvatar = document.getElementById('closeAvatar');
             
             // Direction buttons
             const upBtn = document.getElementById('upBtn');
@@ -349,9 +572,15 @@
             
             let gameActive = false;
             let score = 0;
+            let gemsCollected = 0;
+            let totalGems = 0;
             let chickenPosition = { x: 180, y: 30 };
             let carSpeeds = [];
             let animationFrameId;
+            let gems = [];
+            let tapCount = 0;
+            let tapGameTimeLeft = 5;
+            let tapGameInterval;
             
             // Initialize car positions and speeds
             function initCars() {
@@ -363,15 +592,82 @@
                 });
             }
             
+            // Create gems on the road
+            function createGems() {
+                // Clear existing gems
+                gems.forEach(gem => {
+                    if (gem.element && gem.element.parentNode) {
+                        gem.element.parentNode.removeChild(gem.element);
+                    }
+                });
+                
+                gems = [];
+                
+                // Create 5 gems at random positions
+                for (let i = 0; i < 5; i++) {
+                    const gem = document.createElement('div');
+                    gem.className = 'gem';
+                    
+                    // Different colors for different gems
+                    const colors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#a55eea'];
+                    const icons = ['💎', '🔶', '💠', '⭐', '🔷'];
+                    
+                    gem.style.background = colors[i];
+                    gem.innerHTML = icons[i];
+                    
+                    // Random position
+                    const x = Math.random() * 350;
+                    const y = 50 + Math.random() * 300;
+                    
+                    gem.style.left = `${x}px`;
+                    gem.style.bottom = `${y}px`;
+                    
+                    document.querySelector('.game-area').appendChild(gem);
+                    
+                    gems.push({
+                        element: gem,
+                        x: x,
+                        y: y,
+                        collected: false
+                    });
+                }
+                
+                // Update gems display
+                updateGemsDisplay();
+            }
+            
+            // Update the gems display
+            function updateGemsDisplay() {
+                gemsContainer.innerHTML = '';
+                
+                for (let i = 0; i < 5; i++) {
+                    const gemIcon = document.createElement('div');
+                    gemIcon.className = 'gem-icon';
+                    
+                    if (i < gemsCollected) {
+                        gemIcon.style.background = '#2ed573';
+                        gemIcon.innerHTML = '✓';
+                    } else {
+                        gemIcon.style.background = '#7b8794';
+                        gemIcon.innerHTML = '○';
+                    }
+                    
+                    gemsContainer.appendChild(gemIcon);
+                }
+            }
+            
             // Start the game
             function startGame() {
                 gameOverScreen.style.display = 'none';
                 gameActive = true;
                 score = 0;
+                gemsCollected = 0;
                 updateMultiplier();
+                updateGemsCount();
                 chickenPosition = { x: 180, y: 30 };
                 updateChickenPosition();
                 initCars();
+                createGems();
                 animate();
             }
             
@@ -410,13 +706,61 @@
                     updateChickenPosition();
                 }
                 
+                checkGemCollection();
                 checkCollision();
+            }
+            
+            // Check if chicken collected a gem
+            function checkGemCollection() {
+                const chickenRect = {
+                    left: chickenPosition.x,
+                    right: chickenPosition.x + 40,
+                    top: 400 - chickenPosition.y - 50,
+                    bottom: 400 - chickenPosition.y
+                };
+                
+                gems.forEach((gem, index) => {
+                    if (gem.collected) return;
+                    
+                    const gemRect = {
+                        left: gem.x,
+                        right: gem.x + 25,
+                        top: 400 - gem.y - 25,
+                        bottom: 400 - gem.y
+                    };
+                    
+                    if (
+                        chickenRect.left < gemRect.right &&
+                        chickenRect.right > gemRect.left &&
+                        chickenRect.top < gemRect.bottom &&
+                        chickenRect.bottom > gemRect.top
+                    ) {
+                        // Collect the gem
+                        gem.collected = true;
+                        gemsCollected++;
+                        totalGems++;
+                        
+                        // Remove the gem from the screen
+                        if (gem.element && gem.element.parentNode) {
+                            gem.element.parentNode.removeChild(gem.element);
+                        }
+                        
+                        updateGemsCount();
+                        updateGemsDisplay();
+                    }
+                });
             }
             
             // Update multiplier based on score
             function updateMultiplier() {
                 const multiplier = (1 + score * 0.01).toFixed(2);
                 multiplierValue.textContent = `${multiplier}x`;
+            }
+            
+            // Update gems count display
+            function updateGemsCount() {
+                gemsCountElement.textContent = `${gemsCollected}/5`;
+                totalGemsElement.textContent = totalGems;
             }
             
             // Check for collision with cars
@@ -455,7 +799,41 @@
                 gameActive = false;
                 cancelAnimationFrame(animationFrameId);
                 finalScoreElement.textContent = score;
+                finalGemsElement.textContent = gemsCollected;
                 gameOverScreen.style.display = 'flex';
+            }
+            
+            // Start tap mini-game
+            function startTapGame() {
+                tapCount = 0;
+                tapGameTimeLeft = 5;
+                tapCountElement.textContent = '0';
+                timeLeftElement.textContent = '5';
+                tapGame.style.display = 'flex';
+                
+                // Timer countdown
+                clearInterval(tapGameInterval);
+                tapGameInterval = setInterval(() => {
+                    tapGameTimeLeft--;
+                    timeLeftElement.textContent = tapGameTimeLeft;
+                    
+                    if (tapGameTimeLeft <= 0) {
+                        clearInterval(tapGameInterval);
+                        
+                        // Award gems based on performance
+                        const earnedGems = Math.min(3, Math.floor(tapCount / 10));
+                        if (earnedGems > 0) {
+                            totalGems += earnedGems;
+                            updateGemsCount();
+                            alert(`You earned ${earnedGems} gems!`);
+                        }
+                        
+                        // Hide the game after a delay
+                        setTimeout(() => {
+                            tapGame.style.display = 'none';
+                        }, 2000);
+                    }
+                }, 1000);
             }
             
             // Animate the cars
@@ -488,6 +866,22 @@
             leftBtn.addEventListener('click', () => moveChicken('left'));
             rightBtn.addEventListener('click', () => moveChicken('right'));
             
+            // Tap game
+            tapGameBtn.addEventListener('click', startTapGame);
+            tapTarget.addEventListener('click', () => {
+                tapCount++;
+                tapCountElement.textContent = tapCount;
+            });
+            
+            // Avatar selection
+            avatarBtn.addEventListener('click', () => {
+                avatarSelection.style.display = 'flex';
+            });
+            
+            closeAvatar.addEventListener('click', () => {
+                avatarSelection.style.display = 'none';
+            });
+            
             // Keyboard controls
             document.addEventListener('keydown', function(e) {
                 if (!gameActive) return;
@@ -508,8 +902,10 @@
                 }
             });
             
-            // Initialize car positions
+            // Initialize car positions and gems
             initCars();
+            createGems();
+            updateGemsDisplay();
         });
     </script>
 </body>
